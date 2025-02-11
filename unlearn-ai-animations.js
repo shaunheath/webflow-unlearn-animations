@@ -341,22 +341,29 @@ gsap.to(".scale_wrapper", {
 // ──────────────────────────────
 document.addEventListener("DOMContentLoaded", function () {
   const accordionsWrappers = document.querySelectorAll(".accordians_wrapper");
-  let autoPlayEnabled = false;
 
   accordionsWrappers.forEach((wrapper) => {
-    const accordions = wrapper.querySelectorAll(".accordian-container");
-    const visualsWrapper = wrapper
-      .closest(".main-content_section")
-      .querySelector(".accordian-images-wrapper");
-    const visuals = visualsWrapper.querySelectorAll(".accordian-animation-wrapper");
-    const progressBars = wrapper.querySelectorAll(".accordian-progress-bar");
+    // Each accordion instance has its own state
+    let autoPlayEnabled = false;
     let currentIndex = 0;
-    const accordionDuration = 15;
+    const accordionDuration = 15; // seconds
     let autoPlayTimeout;
     let progressBarTweens = [];
-    let observer;
 
+    // Select the accordion elements within this wrapper
+    const accordions = wrapper.querySelectorAll(".accordian-container");
+
+    // Scope the visuals wrapper to within the wrapper
+    const visualsWrapper = wrapper.querySelector(".accordian-images-wrapper");
+    let visuals = [];
+    if (visualsWrapper) {
+      visuals = visualsWrapper.querySelectorAll(".accordian-animation-wrapper");
+    }
+    const progressBars = wrapper.querySelectorAll(".accordian-progress-bar");
+
+    // Function to open a specific accordion by index
     function openAccordion(index) {
+      // Close all accordions and reset progress bars
       accordions.forEach((accordion, i) => {
         const contentContainer = accordion.querySelector(".accordian-content-container");
         gsap.to(contentContainer, {
@@ -370,6 +377,7 @@ document.addEventListener("DOMContentLoaded", function () {
         gsap.set(progressBars[i], { width: "0%" });
       });
 
+      // Open the targeted accordion
       const activeAccordion = accordions[index];
       const contentContainer = activeAccordion.querySelector(".accordian-content-container");
       gsap.to(contentContainer, {
@@ -383,7 +391,8 @@ document.addEventListener("DOMContentLoaded", function () {
         ease: "linear",
       });
 
-      if (!visualsWrapper.id || visualsWrapper.id !== "dont-swap") {
+      // Animate the visuals, if available
+      if (visuals.length && (!visualsWrapper.id || visualsWrapper.id !== "dont-swap")) {
         visuals.forEach((visual, i) => {
           gsap.to(visual, {
             opacity: i === index ? 1 : 0,
@@ -394,6 +403,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
+    // Function to cycle through accordions automatically
     function cycleAccordions() {
       if (autoPlayEnabled) {
         openAccordion(currentIndex);
@@ -402,6 +412,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
+    // Function to reset auto‑play when a user manually clicks an accordion or visual
     function resetAutoPlay(index) {
       clearTimeout(autoPlayTimeout);
       currentIndex = index;
@@ -412,19 +423,24 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    visuals.forEach((visual, i) => {
-      visual.addEventListener("click", () => {
-        resetAutoPlay(i);
+    // Add event listeners for visuals (if they exist)
+    if (visuals.length) {
+      visuals.forEach((visual, i) => {
+        visual.addEventListener("click", () => {
+          resetAutoPlay(i);
+        });
       });
-    });
+    }
 
+    // Add event listeners for each accordion container
     accordions.forEach((accordion, i) => {
       accordion.addEventListener("click", () => {
         resetAutoPlay(i);
       });
     });
 
-    observer = new IntersectionObserver(
+    // Use IntersectionObserver so the auto‑play starts only when this wrapper is in view
+    const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
@@ -438,22 +454,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
     observer.observe(wrapper);
 
+    // Open the first accordion by default if auto‑play is not enabled
     if (!autoPlayEnabled) {
       openAccordion(0);
     }
-  });
 
-  window.toggleAutoPlay = function () {
-    autoPlayEnabled = !autoPlayEnabled;
-    if (autoPlayEnabled) {
-      accordionsWrappers.forEach(() => {
+    // (Optional) Attach a toggle function to this wrapper for controlling auto‑play
+    wrapper.toggleAutoPlay = function () {
+      autoPlayEnabled = !autoPlayEnabled;
+      if (autoPlayEnabled) {
         cycleAccordions();
-      });
-    } else {
-      clearTimeout(autoPlayTimeout);
-    }
-  };
+      } else {
+        clearTimeout(autoPlayTimeout);
+      }
+    };
+  });
 });
+
 
 // ──────────────────────────────
 // Count-Up Animation in Stats Section
