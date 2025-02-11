@@ -343,18 +343,18 @@ document.addEventListener("DOMContentLoaded", function () {
   const accordionsWrappers = document.querySelectorAll(".accordians_wrapper");
 
   accordionsWrappers.forEach((wrapper) => {
-    // Each accordion instance has its own state
+    // Each accordion instance gets its own state
     let autoPlayEnabled = false;
     let currentIndex = 0;
     const accordionDuration = 15; // seconds
     let autoPlayTimeout;
     let progressBarTweens = [];
 
-    // Select the accordion elements within this wrapper
+    // Select accordion elements within this wrapper
     const accordions = wrapper.querySelectorAll(".accordian-container");
 
-    // Scope the visuals wrapper to within the wrapper
-    const visualsWrapper = wrapper.querySelector(".accordian-images-wrapper");
+    // Find the visuals wrapper as a sibling (using the parent element)
+    const visualsWrapper = wrapper.parentElement.querySelector(".accordian-images-wrapper");
     let visuals = [];
     if (visualsWrapper) {
       visuals = visualsWrapper.querySelectorAll(".accordian-animation-wrapper");
@@ -391,8 +391,11 @@ document.addEventListener("DOMContentLoaded", function () {
         ease: "linear",
       });
 
-      // Animate the visuals, if available
-      if (visuals.length && (!visualsWrapper.id || visualsWrapper.id !== "dont-swap")) {
+      // Animate visuals if available and if visuals swapping isn’t disabled
+      if (
+        visuals.length &&
+        (!visualsWrapper.id || visualsWrapper.id !== "dont-swap")
+      ) {
         visuals.forEach((visual, i) => {
           gsap.to(visual, {
             opacity: i === index ? 1 : 0,
@@ -439,7 +442,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
 
-    // Use IntersectionObserver so the auto‑play starts only when this wrapper is in view
+    // Use IntersectionObserver so auto‑play starts only when this wrapper is in view
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -470,7 +473,6 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   });
 });
-
 
 // ──────────────────────────────
 // Count-Up Animation in Stats Section
